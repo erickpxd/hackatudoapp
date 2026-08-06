@@ -1,0 +1,467 @@
+openapi: 3.1.0
+info:
+  title: Hackatudo Shared Data API
+  version: 0.1.0
+  description: >-
+    Contrato mínimo para autenticação demonstrativa, grupos, metas, mascote e contribuições.
+    Aplicativos, UsageStats, intenções e respostas de intervenção não são aceitos.
+servers:
+  - url: https://api.example.invalid/v1
+    description: URL ilustrativa; a URL real é configuração externa ao repositório.
+security:
+  - bearerAuth: []
+paths:
+  /auth/login:
+    post:
+      security: []
+      summary: Autenticar usuário do ciclo remoto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Autenticação concluída
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResult'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /groups:
+    get:
+      summary: Listar grupos do usuário
+      responses:
+        '200':
+          description: Grupos visíveis ao usuário
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StudyGroup'
+    post:
+      summary: Criar grupo com o autor como OWNER
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGroup'
+      responses:
+        '201':
+          description: Grupo criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudyGroup'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /groups/{groupId}:
+    get:
+      summary: Obter grupo e sua versão atual
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+      responses:
+        '200':
+          description: Grupo encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudyGroup'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /groups/{groupId}/members:
+    post:
+      summary: Adicionar membro por ação do OWNER
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, expectedVersion]
+              properties:
+                userId:
+                  type: string
+                  format: uuid
+                expectedVersion:
+                  type: integer
+                  minimum: 0
+      responses:
+        '204':
+          description: Membro adicionado
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /groups/{groupId}/invites:
+    post:
+      summary: Criar convite revogável por ação do OWNER
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '201':
+          description: Código de convite criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupInvite'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /group-memberships:
+    post:
+      summary: Entrar em grupo com código válido
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [inviteCode]
+              properties:
+                inviteCode:
+                  type: string
+                  minLength: 1
+      responses:
+        '201':
+          description: Participação MEMBER criada
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /groups/{groupId}/goals:
+    post:
+      summary: Criar meta por número de sessões
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGoal'
+      responses:
+        '201':
+          description: Meta criada
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /groups/{groupId}/ownership:
+    put:
+      summary: Transferir administração do grupo
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [newOwnerId, expectedVersion]
+              properties:
+                newOwnerId:
+                  type: string
+                  format: uuid
+                expectedVersion:
+                  type: integer
+                  minimum: 0
+      responses:
+        '204':
+          description: Administração transferida atomicamente
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /session-summaries:
+    post:
+      summary: Enviar contribuição mínima de sessão ao grupo
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SharedSessionSummary'
+      responses:
+        '202':
+          description: Contribuição aceita ou já processada
+        '422':
+          description: Payload contém campo ou valor não permitido
+  /groups/{groupId}/mascot:
+    get:
+      summary: Obter progresso coletivo do mascote
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+      responses:
+        '200':
+          description: Progresso coletivo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MascotProgress'
+  /aggregates/classrooms/{classroomId}:
+    get:
+      summary: Obter totais da turma sem filtros ou detalhe individual
+      parameters:
+        - name: classroomId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Totais agregados da turma inteira
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassroomAggregate'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /schools:
+    get:
+      summary: Listar instituições autorizadas
+      responses:
+        '200':
+          description: Instituições autorizadas
+    post:
+      summary: Criar instituição mínima
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNamedResource'
+      responses:
+        '201':
+          description: Instituição criada
+  /schools/{schoolId}/classrooms:
+    get:
+      summary: Listar turmas da instituição
+      parameters:
+        - name: schoolId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Turmas sem métricas individuais
+    post:
+      summary: Criar turma mínima
+      parameters:
+        - name: schoolId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNamedResource'
+      responses:
+        '201':
+          description: Turma criada
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    GroupId:
+      name: groupId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    Unauthorized:
+      description: Credenciais inválidas
+    Forbidden:
+      description: Usuário sem permissão para a operação
+    NotFound:
+      description: Recurso não encontrado
+    Conflict:
+      description: Versão divergente; resposta inclui a versão atual do recurso
+  schemas:
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+    AuthResult:
+      type: object
+      required: [accessToken, expiresAt]
+      properties:
+        accessToken:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+    CreateGroup:
+      type: object
+      additionalProperties: false
+      required: [name, objective, mascotType]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        objective:
+          type: string
+          minLength: 1
+        mascotType:
+          type: string
+    StudyGroup:
+      type: object
+      required: [id, name, objective, ownerId, mascot, version]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        objective:
+          type: string
+        ownerId:
+          type: string
+          format: uuid
+        mascot:
+          $ref: '#/components/schemas/MascotProgress'
+        version:
+          type: integer
+          minimum: 0
+    GroupInvite:
+      type: object
+      additionalProperties: false
+      required: [code, groupId, expiresAt]
+      properties:
+        code:
+          type: string
+        groupId:
+          type: string
+          format: uuid
+        expiresAt:
+          type: string
+          format: date-time
+    CreateNamedResource:
+      type: object
+      additionalProperties: false
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+    CreateGoal:
+      type: object
+      additionalProperties: false
+      required: [title, targetType, targetValue, startsAt, endsAt, expectedVersion]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        targetType:
+          type: string
+          enum: [NUMBER_OF_SESSIONS]
+        targetValue:
+          type: integer
+          minimum: 1
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        expectedVersion:
+          type: integer
+          minimum: 0
+    SharedSessionSummary:
+      type: object
+      additionalProperties: false
+      required: [id, groupId, durationMinutes, completed, occurredAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        groupId:
+          type: string
+          format: uuid
+        durationMinutes:
+          type: integer
+          minimum: 0
+        completed:
+          type: boolean
+        occurredAt:
+          type: string
+          format: date-time
+    MascotProgress:
+      type: object
+      required: [type, experience, stage]
+      properties:
+        type:
+          type: string
+        experience:
+          type: integer
+          minimum: 0
+        stage:
+          type: integer
+          minimum: 1
+          maximum: 3
+    ClassroomAggregate:
+      type: object
+      additionalProperties: false
+      required:
+        - classroomId
+        - sessionCount
+        - averageDurationMinutes
+        - completionRate
+        - interventionCount
+      properties:
+        classroomId:
+          type: string
+          format: uuid
+        sessionCount:
+          type: integer
+          minimum: 0
+        averageDurationMinutes:
+          type: number
+          minimum: 0
+        completionRate:
+          type: number
+          minimum: 0
+          maximum: 1
+        interventionCount:
+          type: integer
+          minimum: 0
