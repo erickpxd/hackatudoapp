@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Uso Consciente</string>
+    <string name="mascot_initial_description">Mascote no estágio inicial, acolhedor e pronto para crescer com o grupo</string>
+    <string name="mascot_growing_description">Mascote no estágio em crescimento, com uma pequena coroa</string>
+    <string name="mascot_evolved_description">Mascote no estágio evoluído, com coroa completa e brilho</string>
 </resources>

@@ -1,0 +1,12 @@
+node_modules/
+.git/
+Dockerfile*
+.dockerignore
+*.log*
+.env*
+coverage/
+**/bin/
+**/obj/
+**/build/
+.gradle/
+.android-sdk/

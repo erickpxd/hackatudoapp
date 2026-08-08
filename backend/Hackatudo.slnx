@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/Hackatudo.Api.csproj" />
+  <Project Path="tests/Hackatudo.Api.Tests/Hackatudo.Api.Tests.csproj" />
+</Solution>

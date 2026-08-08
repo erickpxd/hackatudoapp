@@ -6,6 +6,7 @@ import com.hackatudo.conscious.core.launcher.HomeRoleStatus
 import com.hackatudo.conscious.domain.model.InstalledApp
 import com.hackatudo.conscious.domain.repository.InstalledAppsRepository
 import com.hackatudo.conscious.domain.usecase.session.GetCurrentSessionUseCase
+import com.hackatudo.conscious.domain.usecase.intervention.EvaluateAppLaunchUseCase
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,13 +25,14 @@ class LauncherViewModelTest {
         val repository = mockk<InstalledAppsRepository>()
         val homeRole = mockk<HomeRoleManager>()
         val currentSession = mockk<GetCurrentSessionUseCase>()
+        val evaluateAppLaunch = mockk<EvaluateAppLaunchUseCase>()
         every { repository.observeLaunchableApps() } returns flowOf(
             listOf(InstalledApp("calculator", "Calculadora", "calculator", true, false)),
         )
         every { homeRole.status } returns MutableStateFlow(HomeRoleStatus.NOT_SELECTED)
         every { currentSession() } returns flowOf(null)
 
-        val viewModel = LauncherViewModel(repository, homeRole, currentSession)
+        val viewModel = LauncherViewModel(repository, homeRole, currentSession, evaluateAppLaunch)
         advanceUntilIdle()
 
         assertEquals("Calculadora", viewModel.uiState.value.apps.single().displayName)
