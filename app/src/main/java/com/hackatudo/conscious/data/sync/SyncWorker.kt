@@ -28,7 +28,16 @@ class SyncWorker @AssistedInject constructor(
         var retryableFailure = false
         database.syncOutboxDao().pending().forEach { entry ->
             try {
-                val response = api.sendSummary(SharedSessionSummaryDto(entry.id, entry.groupId, entry.durationMinutes, entry.completed, Instant.ofEpochMilli(entry.occurredAtEpochMillis).toString()))
+                val response = api.sendSummary(
+                    idempotencyKey = entry.id.toString(),
+                    request = SharedSessionSummaryDto(
+                        entry.id,
+                        entry.groupId,
+                        entry.durationMinutes,
+                        entry.completed,
+                        Instant.ofEpochMilli(entry.occurredAtEpochMillis).toString(),
+                    ),
+                )
                 when {
                     response.isSuccessful -> database.syncOutboxDao().updateStatus(entry.id, SyncStatus.SYNCED)
                     response.code() == 409 -> database.syncOutboxDao().updateStatus(entry.id, SyncStatus.FAILED, "VERSION_CONFLICT")
