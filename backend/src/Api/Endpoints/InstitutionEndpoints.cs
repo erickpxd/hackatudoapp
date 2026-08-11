@@ -29,10 +29,29 @@ public static class InstitutionEndpoints
             await db.SaveChangesAsync();
             return Results.Created($"/v1/schools/{schoolId}/classrooms/{classroom.Id}", classroom);
         });
+        routes.MapGet("/classrooms/{classroomId:guid}/members", async (Guid classroomId, HackatudoDbContext db) =>
+            Results.Ok(await db.ClassroomMembers.AsNoTracking().Where(x => x.ClassroomId == classroomId).ToListAsync()));
+        routes.MapPost("/classrooms/{classroomId:guid}/members", async (Guid classroomId, AddClassroomMemberRequest request, HackatudoDbContext db) =>
+        {
+            if (!await db.Classrooms.AnyAsync(x => x.Id == classroomId) || !await db.Users.AnyAsync(x => x.Id == request.UserId)) return Results.BadRequest();
+            if (await db.ClassroomMembers.AnyAsync(x => x.ClassroomId == classroomId && x.UserId == request.UserId)) return Results.Conflict();
+            var member = new ClassroomMember { ClassroomId = classroomId, UserId = request.UserId };
+            db.ClassroomMembers.Add(member);
+            await db.SaveChangesAsync();
+            return Results.Created($"/v1/classrooms/{classroomId}/members/{member.Id}", member);
+        });
+        routes.MapDelete("/classrooms/{classroomId:guid}/members/{memberId:guid}", async (Guid classroomId, Guid memberId, HackatudoDbContext db) =>
+        {
+            var member = await db.ClassroomMembers.SingleOrDefaultAsync(x => x.ClassroomId == classroomId && x.Id == memberId);
+            if (member is null) return Results.NotFound();
+            db.ClassroomMembers.Remove(member);
+            await db.SaveChangesAsync();
+            return Results.NoContent();
+        });
         routes.MapGet("/aggregates/classrooms/{classroomId:guid}", async (Guid classroomId, ClaimsPrincipal user, HackatudoDbContext db) =>
         {
             if (!await db.Classrooms.AnyAsync(x => x.Id == classroomId)) return Results.NotFound();
-            var summaries = await db.SessionSummaries.AsNoTracking().ToListAsync();
+            var summaries = await db.SessionSummaries.AsNoTracking().Where(x => x.ClassroomId == classroomId).ToListAsync();
             var count = summaries.Count;
             return Results.Ok(new ClassroomAggregateResponse(classroomId, count, count == 0 ? 0 : summaries.Average(x => x.DurationMinutes), count == 0 ? 0 : summaries.Count(x => x.Completed) / (double)count, 0, count == 0 ? "stable" : "improving"));
         });
