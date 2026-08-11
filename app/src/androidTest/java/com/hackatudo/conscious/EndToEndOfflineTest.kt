@@ -9,8 +9,10 @@ import com.hackatudo.conscious.domain.usecase.intervention.EvaluateAppLaunchUseC
 import java.util.UUID
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -33,6 +35,8 @@ class EndToEndOfflineTest {
         assertEquals(AppLaunchEvaluation.INTERVENE, evaluate("com.example.messages"))
         repository.save(planned.complete(62_000))
         assertEquals(60_000, repository.value.endedAtEpochMillis!! - repository.value.startedAtEpochMillis!!)
+        assertEquals(com.hackatudo.conscious.domain.model.FocusSessionStatus.COMPLETED, repository.value.status)
+        assertNull(repository.observeCurrent().first())
     }
 }
 

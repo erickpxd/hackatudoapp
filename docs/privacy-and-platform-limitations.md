@@ -30,3 +30,9 @@ afeta launcher, sessões, intervenções ou grupos.
 - Demonstrativos locais: sugestão pedagógica e agregado institucional representativo.
 - Ciclo remoto: API ASP.NET/PostgreSQL, autenticação JWT, grupos, contribuições idempotentes e painel
   Angular. A URL vem de configuração externa e o valor padrão não aponta para um servidor real.
+
+Integrações reais incluem o launcher Android/Home role, PackageManager, Room, DataStore, WorkManager
+e o acesso opcional ao UsageStats após consentimento. A sugestão pedagógica, os dados seed e o
+agregado institucional usado na demonstração são fixtures locais; o dashboard remoto depende de
+API, PostgreSQL e dependências instaladas. Aberturas iniciadas por notificações, links ou outros
+aplicativos não passam pelo fluxo de intervenção do launcher.

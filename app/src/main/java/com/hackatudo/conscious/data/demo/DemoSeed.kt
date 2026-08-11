@@ -38,4 +38,13 @@ object DemoSeed {
     }
 
     val mascotStages = listOf(MascotStage.INITIAL, MascotStage.GROWING, MascotStage.EVOLVED)
+
+    data class State(val context: FocusContext, val group: StudyGroup, val stages: List<MascotStage>)
+
+    /** Recria sempre os mesmos dados locais para uma demonstração repetível. */
+    fun reset(): State = State(
+        context = mathematicsContext(),
+        group = mathematicsMission(),
+        stages = mascotStages,
+    )
 }

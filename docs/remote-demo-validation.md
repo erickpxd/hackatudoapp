@@ -17,5 +17,14 @@ usa o próprio identificador como chave idempotente e nunca reduz o XP do mascot
 
 ## Resultado da execução
 
-Preencher após `dotnet test backend/tests` e `npm test --prefix dashboard`. Neste ambiente, o SDK
-.NET e as dependências Angular podem exigir instalação externa antes da execução.
+## Execução neste ambiente
+
+- `dotnet test backend/tests`: bloqueado porque o projeto requer .NET 10 e o SDK disponível é 8.0.
+- `dotnet run --project backend/src/Api`: não executado; além da incompatibilidade de SDK, o caminho
+  `backend/src/Api` não é um projeto executável separado.
+- `npm test --prefix dashboard`: bloqueado; o executável `ng`/`node_modules` não está disponível.
+- `npm run build --prefix dashboard`: bloqueado pela mesma ausência de dependências Angular.
+- Testes Android de allowlist: executados anteriormente no conjunto unitário e aprovados.
+
+Retry, idempotência, conflitos e agregados remotos exigem SDK .NET 10, dependências Node/Angular e
+serviços configurados; não foram declarados como aprovados sem essa infraestrutura.
