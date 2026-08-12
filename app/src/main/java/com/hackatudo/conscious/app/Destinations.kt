@@ -31,4 +31,5 @@ sealed interface Destination {
     data object Institution : Destination { override val route = "institution" }
     data object Suggestion : Destination { override val route = "session/suggestion" }
     data object UsageAccess : Destination { override val route = "settings/usage-access" }
+    data object AiTutor : Destination { override val route = "ai-tutor" }
 }

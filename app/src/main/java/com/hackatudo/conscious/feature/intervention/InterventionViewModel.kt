@@ -10,6 +10,8 @@ import com.hackatudo.conscious.domain.repository.InstalledAppsRepository
 import com.hackatudo.conscious.domain.usecase.intervention.RecordInterventionDecisionUseCase
 import com.hackatudo.conscious.domain.usecase.intervention.RecordInterventionShownUseCase
 import com.hackatudo.conscious.domain.usecase.session.GetCurrentSessionUseCase
+import com.hackatudo.conscious.domain.usecase.session.ResumeFocusSessionUseCase
+import com.hackatudo.conscious.domain.model.FocusSessionStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
@@ -27,6 +29,7 @@ data class InterventionUiState(
     val isLoading: Boolean = false,
     val intention: String = "",
     val appName: String = "",
+    val appCategory: String = "Aplicativo fora do foco",
     val remainingMillis: Long = 0,
     val selectedReason: ReflectionReason? = null,
     val isSubmitting: Boolean = false,
@@ -46,6 +49,7 @@ class InterventionViewModel @Inject constructor(
     private val clock: Clock,
     private val recordShown: RecordInterventionShownUseCase,
     private val recordDecision: RecordInterventionDecisionUseCase,
+    private val resumeSession: ResumeFocusSessionUseCase,
 ) : ViewModel() {
     private val packageName: String = checkNotNull(savedStateHandle["packageName"])
     private val currentSessionFlow = currentSession()
@@ -69,10 +73,13 @@ class InterventionViewModel @Inject constructor(
             val elapsed = session.startedAtEpochMillis
                 ?.let { (clock.nowEpochMillis() - it - session.accumulatedPauseMillis).coerceAtLeast(0) }
                 ?: 0
+            val app = apps.firstOrNull { it.packageName == packageName }
+            val appName = app?.displayName ?: packageName
             form.copy(
                 isLoading = false,
                 intention = session.currentIntention?.text ?: session.title,
-                appName = apps.firstOrNull { it.packageName == packageName }?.displayName ?: packageName,
+                appName = appName,
+                appCategory = if (isEntertainmentApp(packageName, appName)) "Entretenimento" else "Aplicativo fora do foco",
                 remainingMillis = (session.plannedDurationMillis - elapsed).coerceAtLeast(0),
             )
         }
@@ -93,8 +100,11 @@ class InterventionViewModel @Inject constructor(
             val current = session ?: return@launch
             formState.update { it.copy(isSubmitting = true, errorMessage = null) }
             runCatching {
-                val activeSession = currentSessionId()
-                recordDecision(activeSession, packageName, decision, formState.value.selectedReason)
+                val activeSession = checkNotNull(currentSessionFlow.first())
+                recordDecision(activeSession.id, packageName, decision, formState.value.selectedReason)
+                if (decision == InterventionDecision.STAY_FOCUSED && activeSession.status == FocusSessionStatus.PAUSED) {
+                    resumeSession(activeSession.id)
+                }
             }.onSuccess {
                 effectChannel.send(
                     if (decision == InterventionDecision.OPEN_ANYWAY) {
@@ -111,5 +121,8 @@ class InterventionViewModel @Inject constructor(
         }
     }
 
-    private suspend fun currentSessionId() = checkNotNull(currentSessionFlow.first()?.id)
+    private fun isEntertainmentApp(packageName: String, displayName: String): Boolean {
+        val identity = "$packageName $displayName".lowercase()
+        return listOf("youtube", "tiktok", "instagram", "facebook", "netflix", "spotify", "music", "game", "twitch").any(identity::contains)
+    }
 }

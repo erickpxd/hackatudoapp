@@ -10,6 +10,8 @@ import com.hackatudo.conscious.domain.model.FocusSession
 import com.hackatudo.conscious.domain.usecase.session.GetCurrentSessionUseCase
 import com.hackatudo.conscious.domain.model.AppLaunchEvaluation
 import com.hackatudo.conscious.domain.usecase.intervention.EvaluateAppLaunchUseCase
+import com.hackatudo.conscious.core.datastore.PrivacyPreferencesDataStore
+import com.hackatudo.conscious.domain.usecase.insights.GetPersonalInsightsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,6 +28,11 @@ data class LauncherUiState(
     val homeRoleStatus: HomeRoleStatus = HomeRoleStatus.NOT_SELECTED,
     val errorMessage: String? = null,
     val currentSession: FocusSession? = null,
+    val userName: String = "",
+    val petName: String = "neko",
+    val sessionsToday: Int = 0,
+    val studyMillisToday: Long = 0,
+    val showHomeRolePrompt: Boolean = false,
 )
 
 sealed interface LauncherEffect {
@@ -39,6 +46,8 @@ class LauncherViewModel @Inject constructor(
     private val homeRoleManager: HomeRoleManager,
     private val getCurrentSession: GetCurrentSessionUseCase,
     private val evaluateAppLaunch: EvaluateAppLaunchUseCase,
+    private val getPersonalInsights: GetPersonalInsightsUseCase,
+    private val preferences: PrivacyPreferencesDataStore,
 ) : ViewModel() {
     private val mutableUiState = MutableStateFlow(LauncherUiState())
     val uiState: StateFlow<LauncherUiState> = mutableUiState
@@ -49,6 +58,7 @@ class LauncherViewModel @Inject constructor(
 
     fun retry() = load()
     fun refreshHomeRole() = homeRoleManager.refresh()
+    fun dismissHomeRolePrompt() = viewModelScope.launch { preferences.setHomeRolePromptDismissed(true) }
     fun requestAppLaunch(packageName: String) {
         viewModelScope.launch {
             val effect = when (evaluateAppLaunch(packageName)) {
@@ -62,8 +72,20 @@ class LauncherViewModel @Inject constructor(
     private fun load() {
         viewModelScope.launch {
             runCatching {
-                combine(installedAppsRepository.observeLaunchableApps(), homeRoleManager.status, getCurrentSession()) { apps, role, session ->
-                    LauncherUiState(isLoading = false, apps = apps, homeRoleStatus = role, currentSession = session)
+                combine(installedAppsRepository.observeLaunchableApps(), homeRoleManager.status, getCurrentSession(), getPersonalInsights(), preferences.preferences) { apps, role, session, insights, profile ->
+                    val today = System.currentTimeMillis() / 86_400_000L
+                    val todayInsight = insights.daily.firstOrNull { it.epochDay == today }
+                    LauncherUiState(
+                        isLoading = false,
+                        apps = apps,
+                        homeRoleStatus = role,
+                        currentSession = session,
+                        userName = profile.userName,
+                        petName = profile.petName,
+                        sessionsToday = todayInsight?.sessionCount ?: 0,
+                        studyMillisToday = todayInsight?.totalDurationMillis ?: 0,
+                        showHomeRolePrompt = role == HomeRoleStatus.NOT_SELECTED && !profile.homeRolePromptDismissed,
+                    )
                 }.collect { mutableUiState.value = it }
             }.onFailure {
                 mutableUiState.update { state ->

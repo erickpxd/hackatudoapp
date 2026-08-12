@@ -5,9 +5,14 @@ import com.hackatudo.conscious.domain.model.FocusSession
 import com.hackatudo.conscious.domain.model.FocusSessionStatus
 import com.hackatudo.conscious.domain.repository.FocusSessionRepository
 import com.hackatudo.conscious.domain.usecase.intervention.EvaluateAppLaunchUseCase
+import com.hackatudo.conscious.core.datastore.PrivacyPreferences
+import com.hackatudo.conscious.core.datastore.PrivacyPreferencesDataStore
+import io.mockk.every
+import io.mockk.mockk
 import java.util.UUID
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -26,21 +31,21 @@ class EvaluateAppLaunchUseCaseTest {
 
     @Test
     fun `allows launches when there is no current session`() = runTest {
-        val evaluation = EvaluateAppLaunchUseCase(FakeRepository(null))("chat")
+        val evaluation = useCase(FakeRepository(null))("chat")
 
         assertEquals(AppLaunchEvaluation.ALLOW, evaluation)
     }
 
     @Test
     fun `allows an app related to the current session`() = runTest {
-        val evaluation = EvaluateAppLaunchUseCase(FakeRepository(activeSession(setOf("calculator"))))("calculator")
+        val evaluation = useCase(FakeRepository(activeSession(setOf("calculator"))))("calculator")
 
         assertEquals(AppLaunchEvaluation.ALLOW, evaluation)
     }
 
     @Test
     fun `intervenes for an app outside the current context`() = runTest {
-        val evaluation = EvaluateAppLaunchUseCase(FakeRepository(activeSession(setOf("calculator"))))("chat")
+        val evaluation = useCase(FakeRepository(activeSession(setOf("calculator"))))("chat")
 
         assertEquals(AppLaunchEvaluation.INTERVENE, evaluation)
     }
@@ -53,4 +58,10 @@ class EvaluateAppLaunchUseCaseTest {
         startedAtEpochMillis = 1,
         selectedPackageNames = packages,
     )
+
+    private fun useCase(repository: FocusSessionRepository): EvaluateAppLaunchUseCase {
+        val preferences = mockk<PrivacyPreferencesDataStore>()
+        every { preferences.preferences } returns flowOf(PrivacyPreferences())
+        return EvaluateAppLaunchUseCase(repository, preferences)
+    }
 }

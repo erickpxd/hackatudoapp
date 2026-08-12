@@ -33,7 +33,6 @@ class AndroidInstalledAppsRepository @Inject constructor(
             .mapNotNull { result ->
                 val activityInfo = result.activityInfo ?: return@mapNotNull null
                 val packageName = activityInfo.packageName ?: return@mapNotNull null
-                if (packageName == context.packageName) return@mapNotNull null
                 InstalledApp(
                     packageName = packageName,
                     displayName = result.loadLabel(packageManager)?.toString()?.ifBlank { packageName } ?: packageName,

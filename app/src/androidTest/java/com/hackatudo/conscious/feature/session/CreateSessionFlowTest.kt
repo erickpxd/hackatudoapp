@@ -11,10 +11,9 @@ import org.junit.Test
 
 class CreateSessionFlowTest {
     @get:Rule val rule = createComposeRule()
-    @Test fun showsIntentionDurationAndApps() {
+    @Test fun showsFirstSessionSetupStep() {
         rule.setContent { CreateSessionScreen(CreateSessionUiState(apps = listOf(InstalledApp("calculator", "Calculadora", "calculator", true, false))), {}, {}, {}, {}, {}) }
-        rule.onNodeWithText("Qual é sua intenção?").assertIsDisplayed()
-        rule.onNodeWithText("30 min").assertIsDisplayed()
-        rule.onNodeWithText("Calculadora").assertIsDisplayed()
+        rule.onNodeWithText("O que você quer fazer?", useUnmergedTree = true).assertIsDisplayed()
+        rule.onNodeWithText("Estudar").assertIsDisplayed()
     }
 }

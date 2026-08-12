@@ -1,6 +1,8 @@
 package com.hackatudo.conscious
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.core.app.ApplicationProvider
+import com.hackatudo.conscious.core.datastore.PrivacyPreferencesDataStore
 import com.hackatudo.conscious.domain.model.AppLaunchEvaluation
 import com.hackatudo.conscious.domain.model.FocusSession
 import com.hackatudo.conscious.domain.model.UsageIntent
@@ -29,7 +31,10 @@ class EndToEndOfflineTest {
             selectedPackageNames = setOf("com.example.calculator"),
         ).start(2_000)
         val repository = InMemorySessions(planned)
-        val evaluate = EvaluateAppLaunchUseCase(repository)
+        val evaluate = EvaluateAppLaunchUseCase(
+            repository,
+            PrivacyPreferencesDataStore(ApplicationProvider.getApplicationContext()),
+        )
 
         assertEquals(AppLaunchEvaluation.ALLOW, evaluate("com.example.calculator"))
         assertEquals(AppLaunchEvaluation.INTERVENE, evaluate("com.example.messages"))

@@ -2,6 +2,7 @@ package com.hackatudo.conscious.feature.session.create
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hackatudo.conscious.core.datastore.PrivacyPreferencesDataStore
 import com.hackatudo.conscious.domain.model.ContentSource
 import com.hackatudo.conscious.domain.model.FocusContext
 import com.hackatudo.conscious.domain.model.InstalledApp
@@ -25,6 +26,7 @@ data class CreateSessionUiState(
     val contexts: List<FocusContext> = emptyList(),
     val error: String? = null,
     val started: Boolean = false,
+    val petName: String = "Neko",
 )
 
 @HiltViewModel
@@ -33,6 +35,7 @@ class CreateSessionViewModel @Inject constructor(
     private val contextRepository: FocusContextRepository,
     private val createSession: CreateFocusSessionUseCase,
     private val startSession: StartFocusSessionUseCase,
+    preferences: PrivacyPreferencesDataStore,
 ) : ViewModel() {
     private val mutableState = MutableStateFlow(CreateSessionUiState())
     val uiState: StateFlow<CreateSessionUiState> = mutableState
@@ -41,6 +44,9 @@ class CreateSessionViewModel @Inject constructor(
         viewModelScope.launch {
             combine(installedAppsRepository.observeLaunchableApps(), contextRepository.observeAll()) { apps, contexts -> apps to contexts }
                 .collect { (apps, contexts) -> mutableState.update { it.copy(apps = apps, contexts = contexts) } }
+        }
+        viewModelScope.launch {
+            preferences.preferences.collect { profile -> mutableState.update { it.copy(petName = profile.petName) } }
         }
     }
 
@@ -69,6 +75,16 @@ class CreateSessionViewModel @Inject constructor(
             createSession(state.intention, state.durationMinutes * 60_000L, state.selectedPackages)
         }.mapCatching { startSession(it.id) }
             .onSuccess { mutableState.update { it.copy(started = true) } }
-            .onFailure { mutableState.update { it.copy(error = "Não foi possível iniciar a sessão.") } }
+            .onFailure { failure ->
+                mutableState.update {
+                    it.copy(
+                        error = if (failure.message?.contains("sessão ativa", ignoreCase = true) == true) {
+                            "Já existe uma sessão em andamento. Volte à Home para continuá-la ou encerrá-la."
+                        } else {
+                            "Não foi possível iniciar a sessão. Tente novamente."
+                        },
+                    )
+                }
+            }
     }
 }
