@@ -23,4 +23,13 @@ describe('AggregateOverviewComponent', () => {
     fixture.componentInstance.load(); http.expectOne(req => /\/aggregates\/classrooms\//.test(req.url)).flush({}, { status: 500, statusText: 'Error' }); fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('[role=alert]').textContent).toContain('Não foi possível');
   });
+  it('navigates between the institutional sections', () => {
+    const buttons = Array.from(fixture.nativeElement.querySelectorAll('nav button')) as HTMLButtonElement[];
+    buttons.find(button => button.textContent?.includes('Turmas'))?.click(); fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Turmas monitoradas');
+    buttons.find(button => button.textContent?.includes('Engajamento'))?.click(); fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Engajamento coletivo');
+    buttons.find(button => button.textContent?.includes('Bem-estar'))?.click(); fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Pausas não são tratadas como fracasso');
+  });
 });
