@@ -8,6 +8,21 @@ dados agregados.
 > Status: MVP demonstrável. O núcleo Android funciona offline; API e dashboard representam o ciclo
 > remoto de colaboração e indicadores institucionais.
 
+## Links do projeto
+
+| Conteúdo | Link |
+| --- | --- |
+| 🎨 Protótipo no Figma | [Adicionar link do Figma](https://www.figma.com/) |
+| 🎬 Vídeo de apresentação | [Adicionar link do vídeo](https://www.youtube.com/) |
+| 📊 Lean Canvas | [Adicionar link do Lean Canvas](https://drive.google.com/) |
+| 📱 Baixar APK pelo GitHub | [Abrir a versão mais recente](https://github.com/erickpxd/hackatudoapp/releases/latest) |
+| ☁️ APK no Google Drive (backup) | [Adicionar link do APK no Drive](https://drive.google.com/) |
+
+> Antes da apresentação, substitua os quatro links “Adicionar link” pelos endereços públicos do
+> Figma, vídeo, Lean Canvas e APK de backup. No Google Drive, selecione **Compartilhar → Acesso geral
+> → Qualquer pessoa com o link**. O GitHub Releases deve ser o link principal; o Drive funciona como
+> alternativa de emergência.
+
 ## O que o projeto oferece
 
 - Launcher opcional que lista e abre os aplicativos instalados.
@@ -64,21 +79,47 @@ e compartilhe `app\build\outputs\apk\debug\app-debug.apk`.
 
 ### Publicar para download pelo GitHub
 
-O workflow `Gerar APK Android` também faz o build sem exigir Android Studio local:
+Primeiro, envie o README, o script e o workflow para a branch principal:
+
+```bash
+git add README.md scripts/build-apk.sh .github/workflows/android-apk.yml
+git commit -m "docs: adiciona instruções e publicação do APK"
+git push origin main
+```
+
+Depois disso, o workflow **Gerar APK Android** faz o build sem exigir Android Studio local.
+
+Para testar manualmente:
 
 1. Abra a aba **Actions** do repositório e selecione **Gerar APK Android**.
 2. Clique em **Run workflow**.
 3. Ao terminar, baixe o artefato `gedu-debug-apk` na execução.
 
-Para criar um link público e permanente em **Releases**, publique uma tag de versão:
+O artefato da aba Actions é útil para a equipe, mas pode exigir login no GitHub. Para disponibilizar
+um download simples ao público, crie uma **Release** publicando uma tag de versão:
 
 ```bash
 git tag v0.1.0
 git push origin v0.1.0
 ```
 
-O workflow cria a release e anexa `gedu-v0.1.0.apk` automaticamente. A versão atual do app deve ser
-atualizada em `app/build.gradle.kts` antes de uma nova distribuição.
+O workflow cria a Release e anexa `gedu-v0.1.0.apk` automaticamente. O download ficará disponível
+em [Releases](https://github.com/erickpxd/hackatudoapp/releases), e o botão da seção **Links do
+projeto** sempre apontará para a versão mais recente.
+
+Para publicar uma atualização, altere `versionCode` e `versionName` em `app/build.gradle.kts`, faça
+commit e use uma nova tag, por exemplo `v0.2.0`. Uma tag já publicada não deve ser reutilizada.
+
+### Backup do APK no Google Drive
+
+Também é possível guardar `dist/gedu-debug.apk` no Drive como alternativa:
+
+1. Faça upload do arquivo para o Google Drive.
+2. Abra **Compartilhar** e permita acesso a **Qualquer pessoa com o link**.
+3. Copie o endereço e substitua o link de backup na tabela **Links do projeto**.
+
+O APK de debug é adequado para avaliação e demonstração. Para Play Store ou distribuição em
+produção, gere um build `release` assinado com uma chave protegida.
 
 ## Executar o app Android
 
