@@ -12,11 +12,11 @@ dados agregados.
 
 | Conteúdo | Link |
 | --- | --- |
-| 🎨 Protótipo no Figma | [Adicionar link do Figma](https://www.figma.com/) |
-| 🎬 Vídeo de apresentação | [Adicionar link do vídeo](https://www.youtube.com/) |
-| 📊 Lean Canvas | [Adicionar link do Lean Canvas](https://drive.google.com/) |
+| 🎨 Protótipo no Figma | [Adicionar link do Figma](https://www.figma.com/design/3QVFFuHEc2hdYNLh1gi6N7/hackatudo?node-id=0-1&t=v0cH1MJNuwmLtCnS-1) |
+| 🎬 Vídeo de apresentação | [Adicionar link do vídeo](https://youtu.be/fLE96bj5zQo?is=pL2MYuxdvDU1rPFs) |
+| 📊 Lean Canvas | [Adicionar link do Lean Canvas](https://canva.link/xtr3hod3166pc6w) |
 | 📱 Baixar APK pelo GitHub | [Abrir a versão mais recente](https://github.com/erickpxd/hackatudoapp/releases/latest) |
-| ☁️ APK no Google Drive (backup) | [Adicionar link do APK no Drive](https://drive.google.com/) |
+| ☁️ APK no Google Drive (backup) | [Adicionar link do APK no Drive](https://drive.google.com/drive/folders/1M9H3OVPBfSVAmiPzEuu7URWysK4RF7JU) |
 
 > Antes da apresentação, substitua os quatro links “Adicionar link” pelos endereços públicos do
 > Figma, vídeo, Lean Canvas e APK de backup. No Google Drive, selecione **Compartilhar → Acesso geral
