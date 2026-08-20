@@ -18,10 +18,14 @@ dados agregados.
 | 📱 Baixar APK pelo GitHub | [Abrir a versão mais recente](https://github.com/erickpxd/hackatudoapp/releases/latest) |
 | ☁️ APK no Google Drive (backup) | [Adicionar link do APK no Drive](https://drive.google.com/drive/folders/1M9H3OVPBfSVAmiPzEuu7URWysK4RF7JU) |
 
-> Antes da apresentação, substitua os quatro links “Adicionar link” pelos endereços públicos do
-> Figma, vídeo, Lean Canvas e APK de backup. No Google Drive, selecione **Compartilhar → Acesso geral
-> → Qualquer pessoa com o link**. O GitHub Releases deve ser o link principal; o Drive funciona como
-> alternativa de emergência.
+## Como desinstalar o GEDU
+
+>  Caso escolha o GEDU como aplicativo de tela inicial (launcher), para desinstalá-lo abra o aplicativo Configurações do Android e siga:
+>  Configurações → Aplicativos → GEDU → Desinstalar
+>  Se necessário, antes da desinstalação, altere o aplicativo de tela inicial em:
+>  Configurações → Aplicativos → Aplicativos padrão → App de início/Tela inicial
+>  Selecione o launcher original do aparelho e depois desinstale o GEDU normalmente. Os nomes dessas opções podem variar conforme a marca e a versão do Android.
+
 
 ## O que o projeto oferece
 
