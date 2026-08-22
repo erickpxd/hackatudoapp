@@ -17,7 +17,7 @@ dados agregados.
 | 📊 Lean Canvas | [Adicionar link do Lean Canvas](https://canva.link/xtr3hod3166pc6w) |
 | 📱 Baixar APK pelo GitHub | [Abrir a versão mais recente](https://github.com/erickpxd/hackatudoapp/releases/latest) |
 | ☁️ APK no Google Drive (backup) | [Adicionar link do APK no Drive](https://drive.google.com/drive/folders/1M9H3OVPBfSVAmiPzEuu7URWysK4RF7JU) |
-| 📊 Requisitos iniciais | [Adicionar link do Lean Canvas](https://docs.google.com/document/d/1UsA7lfxwbf3GIW7dtRGDXXWjXc9_Ur30_TIYJZaIYvo/edit?usp=sharing) |
+| 📊 Requisitos iniciais | [Requisitos](https://docs.google.com/document/d/1UsA7lfxwbf3GIW7dtRGDXXWjXc9_Ur30_TIYJZaIYvo/edit?usp=sharing) |
 
 ## Como desinstalar o GEDU
 
