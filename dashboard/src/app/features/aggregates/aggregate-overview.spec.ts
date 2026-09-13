@@ -13,14 +13,14 @@ describe('AggregateOverviewComponent', () => {
   afterEach(() => http.verify());
   it('renders aggregate and has no individual drill-down', () => {
     fixture.componentInstance.load();
-    http.expectOne(/\/aggregates\/classrooms\//).flush({ classroomId: 'x', sessionCount: 42, averageDurationMinutes: 31, completionRate: .86, interventionCount: 9, trend: 'melhorando' });
+    http.expectOne(req => /\/aggregates\/classrooms\//.test(req.url)).flush({ classroomId: 'x', sessionCount: 42, averageDurationMinutes: 31, completionRate: .86, interventionCount: 9, trend: 'melhorando' });
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('42');
     expect(fixture.nativeElement.textContent).not.toContain('estudante individual');
     expect(fixture.nativeElement.querySelector('a')).toBeNull();
   });
   it('renders a recoverable error', () => {
-    fixture.componentInstance.load(); http.expectOne(/\/aggregates\/classrooms\//).flush({}, { status: 500, statusText: 'Error' }); fixture.detectChanges();
+    fixture.componentInstance.load(); http.expectOne(req => /\/aggregates\/classrooms\//.test(req.url)).flush({}, { status: 500, statusText: 'Error' }); fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('[role=alert]').textContent).toContain('Não foi possível');
   });
 });
