@@ -217,10 +217,10 @@ mascote sem ranking/regressão; com rede, repetir contribuição sem duplicar XP
 
 **Teste independente**: abrir sugestão local e exercer as três escolhas sem conceder controle externo.
 
-- [ ] T096 [P] [US6] Prioridade P2 — Modelar `PedagogicalSuggestion` e estados `PENDING`, `ACCEPTED`, `ADAPTED`, `IGNORED` em `app/src/main/java/com/hackatudo/conscious/domain/model/PedagogicalSuggestion.kt`; concluído quando origem é obrigatória.
-- [ ] T097 [P] [US6] Prioridade P2 — Criar fixture local de sugestão e repositório somente leitura em `app/src/main/java/com/hackatudo/conscious/data/repository/DemoSuggestionRepository.kt`; concluído quando não depende de servidor.
-- [ ] T098 [US6] Prioridade P2 — Criar tela/ViewModel de sugestão com aceitar, adaptar e ignorar em `app/src/main/java/com/hackatudo/conscious/feature/session/suggestion/` (depende de T096, T097, T043); concluído quando aceitar/adaptar abre sessão editável e ignorar encerra.
-- [ ] T099 [US6] Prioridade P2 — Adicionar teste Compose das três decisões e origem visível em `app/src/androidTest/java/com/hackatudo/conscious/feature/session/SuggestionScreenTest.kt` (depende de T098); concluído quando nenhuma escolha exige autorização.
+- [X] T096 [P] [US6] Prioridade P2 — Modelar `PedagogicalSuggestion` e estados `PENDING`, `ACCEPTED`, `ADAPTED`, `IGNORED` em `app/src/main/java/com/hackatudo/conscious/domain/model/PedagogicalSuggestion.kt`; concluído quando origem é obrigatória.
+- [X] T097 [P] [US6] Prioridade P2 — Criar fixture local de sugestão e repositório somente leitura em `app/src/main/java/com/hackatudo/conscious/data/repository/DemoSuggestionRepository.kt`; concluído quando não depende de servidor.
+- [X] T098 [US6] Prioridade P2 — Criar tela/ViewModel de sugestão com aceitar, adaptar e ignorar em `app/src/main/java/com/hackatudo/conscious/feature/session/suggestion/` (depende de T096, T097, T043); concluído quando aceitar/adaptar abre sessão editável e ignorar encerra.
+- [X] T099 [US6] Prioridade P2 — Adicionar teste Compose das três decisões e origem visível em `app/src/androidTest/java/com/hackatudo/conscious/feature/session/SuggestionScreenTest.kt` (depende de T098); concluído quando nenhuma escolha exige autorização.
 
 ---
 
@@ -231,8 +231,8 @@ mascote sem ranking/regressão; com rede, repetir contribuição sem duplicar XP
 **Teste independente**: abrir painel com dados representativos, interpretar três tendências e tentar
 sem sucesso isolar estudante ou acessar dados privados.
 
-- [ ] T100 [P] [US7] Prioridade P1 — Definir fixture `InstitutionalAggregate` com totais sem dimensão individual em `app/src/main/java/com/hackatudo/conscious/data/demo/InstitutionalAggregateFixtures.kt`; concluído quando contém sessões, média, conclusão, intervenções e tendência.
-- [ ] T101 [US7] Prioridade P1 — Criar tela Android demonstrativa de agregados em `app/src/main/java/com/hackatudo/conscious/feature/institution/InstitutionOverviewScreen.kt` (depende de T100); concluído quando não há filtro, exportação ou drill-down.
+- [X] T100 [P] [US7] Prioridade P1 — Definir fixture `InstitutionalAggregate` com totais sem dimensão individual em `app/src/main/java/com/hackatudo/conscious/data/demo/InstitutionalAggregateFixtures.kt`; concluído quando contém sessões, média, conclusão, intervenções e tendência.
+- [X] T101 [US7] Prioridade P1 — Criar tela Android demonstrativa de agregados em `app/src/main/java/com/hackatudo/conscious/feature/institution/InstitutionOverviewScreen.kt` (depende de T100); concluído quando não há filtro, exportação ou drill-down.
 - [ ] T102 [P] [US7] Prioridade P2 — Implementar criação/listagem mínima de `School`, `Classroom`, `ClassroomMember` e endpoint agregado em `backend/src/Domain/` e `backend/src/Api/Endpoints/InstitutionEndpoints.cs` (depende de T084–T087); concluído quando organiza turmas e responde apenas ao schema agregado sem histórico individual.
 - [ ] T103 [P] [US7] Prioridade P2 — Criar projeto Angular e configuração externa da API em `dashboard/` (depende de T087); concluído quando build e teste padrão passam.
 - [ ] T104 [P] [US7] Prioridade P2 — Implementar login mock restrito ao build de demonstração em `dashboard/src/app/core/auth/` (depende de T103); concluído quando produção não contém credencial hardcoded.
