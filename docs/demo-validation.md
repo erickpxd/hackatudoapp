@@ -21,3 +21,11 @@ Data planejada: 2026-09-12
 
 Os percentuais de CS-001, CS-004, CS-005 e CS-009 devem ser calculados somente após sessões reais;
 nenhum resultado de participante foi inventado durante a implementação automatizada.
+
+## Execução automatizada desta revisão
+
+- Testes unitários Android: aprovados (`:app:testDebugUnitTest`).
+- Compilação dos testes instrumentados: aprovada (`:app:compileDebugAndroidTestKotlin`).
+- Execução dos oito cenários em aparelho/emulador: pendente; não há dispositivo conectado.
+- Modo avião, tempos de abertura fria e ações locais: não medidos neste ambiente.
+- CS-001, CS-004, CS-005 e CS-009: sem amostra humana; percentuais permanecem pendentes.

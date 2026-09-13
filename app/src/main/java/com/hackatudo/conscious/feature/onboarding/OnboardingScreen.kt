@@ -21,7 +21,7 @@ fun OnboardingScreen(onContinue: () -> Unit) {
         Text("Use o celular com intenção", modifier = Modifier.semantics { heading() })
         Text("Este launcher organiza seus aplicativos em torno de uma intenção e de sessões que você mesmo cria.")
         Text("Se um toque sair do contexto, a intervenção oferece uma pausa: continuar focado ou abrir mesmo assim continua sendo sua decisão.")
-        Text("Intenções, aplicativos, motivos e histórico ficam neste aparelho. Você pode apagá-los nas configurações.")
+        Text("Intenções, aplicativos, motivos e histórico ficam neste aparelho. Categorias locais não são compartilhadas; somente categorias agregadas e estritamente necessárias podem sair do dispositivo. Você pode apagar o histórico nas configurações.")
         Text("Grupos usam metas coletivas e um mascote que evolui sem ranking ou punição.")
         Text("Somente contribuição, grupo, duração, conclusão e horário podem ser sincronizados. O painel institucional mostra apenas totais.")
         Text("Para usar o botão Home, o Android mostrará uma escolha de tela inicial depois desta explicação. Você pode recusar ou mudar depois.")
