@@ -233,12 +233,12 @@ sem sucesso isolar estudante ou acessar dados privados.
 
 - [X] T100 [P] [US7] Prioridade P1 — Definir fixture `InstitutionalAggregate` com totais sem dimensão individual em `app/src/main/java/com/hackatudo/conscious/data/demo/InstitutionalAggregateFixtures.kt`; concluído quando contém sessões, média, conclusão, intervenções e tendência.
 - [X] T101 [US7] Prioridade P1 — Criar tela Android demonstrativa de agregados em `app/src/main/java/com/hackatudo/conscious/feature/institution/InstitutionOverviewScreen.kt` (depende de T100); concluído quando não há filtro, exportação ou drill-down.
-- [ ] T102 [P] [US7] Prioridade P2 — Implementar criação/listagem mínima de `School`, `Classroom`, `ClassroomMember` e endpoint agregado em `backend/src/Domain/` e `backend/src/Api/Endpoints/InstitutionEndpoints.cs` (depende de T084–T087); concluído quando organiza turmas e responde apenas ao schema agregado sem histórico individual.
-- [ ] T103 [P] [US7] Prioridade P2 — Criar projeto Angular e configuração externa da API em `dashboard/` (depende de T087); concluído quando build e teste padrão passam.
-- [ ] T104 [P] [US7] Prioridade P2 — Implementar login mock restrito ao build de demonstração em `dashboard/src/app/core/auth/` (depende de T103); concluído quando produção não contém credencial hardcoded.
-- [ ] T105 [US7] Prioridade P2 — Implementar cliente de agregados, loading e erro em `dashboard/src/app/features/aggregates/aggregate.service.ts` (depende de T102, T103); concluído quando consome somente `/aggregates/classrooms/{id}`.
-- [ ] T106 [US7] Prioridade P2 — Implementar seleção/criação mínima de turma e overview com total, média, conclusão, intervenções e tendência em `dashboard/src/app/features/aggregates/` (depende de T105); concluído quando organiza turmas sem filtro ou detalhe individual.
-- [ ] T107 [US7] Prioridade P2 — Criar testes Angular de renderização, erro e ausência de drill-down em `dashboard/src/app/features/aggregates/aggregate-overview.spec.ts` (depende de T106); concluído quando todos passam.
+- [X] T102 [P] [US7] Prioridade P2 — Implementar criação/listagem mínima de `School`, `Classroom`, `ClassroomMember` e endpoint agregado em `backend/src/Domain/` e `backend/src/Api/Endpoints/InstitutionEndpoints.cs` (depende de T084–T087); concluído quando organiza turmas e responde apenas ao schema agregado sem histórico individual.
+- [X] T103 [P] [US7] Prioridade P2 — Criar projeto Angular e configuração externa da API em `dashboard/` (depende de T087); concluído quando build e teste padrão passam.
+- [X] T104 [P] [US7] Prioridade P2 — Implementar login mock restrito ao build de demonstração em `dashboard/src/app/core/auth/` (depende de T103); concluído quando produção não contém credencial hardcoded.
+- [X] T105 [US7] Prioridade P2 — Implementar cliente de agregados, loading e erro em `dashboard/src/app/features/aggregates/aggregate.service.ts` (depende de T102, T103); concluído quando consome somente `/aggregates/classrooms/{id}`.
+- [X] T106 [US7] Prioridade P2 — Implementar seleção/criação mínima de turma e overview com total, média, conclusão, intervenções e tendência em `dashboard/src/app/features/aggregates/` (depende de T105); concluído quando organiza turmas sem filtro ou detalhe individual.
+- [X] T107 [US7] Prioridade P2 — Criar testes Angular de renderização, erro e ausência de drill-down em `dashboard/src/app/features/aggregates/aggregate-overview.spec.ts` (depende de T106); concluído quando todos passam.
 
 **Checkpoint**: T100–T101 satisfazem a demonstração P1; backend/dashboard completos permanecem P2.
 
@@ -248,10 +248,10 @@ sem sucesso isolar estudante ou acessar dados privados.
 
 **Objetivo**: preparar indicador pessoal futuro sem criar dependência ou vigilância no MVP.
 
-- [ ] T108 [P] Prioridade P3 — Criar contrato opcional `PersonalUsageStatsRepository` sem binding no fluxo principal em `app/src/main/java/com/hackatudo/conscious/domain/repository/PersonalUsageStatsRepository.kt`; concluído quando nenhuma feature P0 depende dele.
-- [ ] T109 [P] Prioridade P3 — Criar detector de disponibilidade/permissão e Intent de configurações em `app/src/main/java/com/hackatudo/conscious/data/apps/AndroidUsageStatsRepository.kt`; concluído quando ausência de `PACKAGE_USAGE_STATS` retorna indisponível sem erro.
-- [ ] T110 Prioridade P3 — Criar tela de explicação e opt-in separado em `app/src/main/java/com/hackatudo/conscious/feature/settings/UsageAccessSettingsScreen.kt` (depende de T108, T109); concluído quando recusa mantém launcher e sessões íntegros.
-- [ ] T111 Prioridade P3 — Criar consulta local mínima e teste de não serialização em `app/src/test/java/com/hackatudo/conscious/data/apps/UsageStatsPrivacyTest.kt` (depende de T109, T110); concluído quando nenhum DTO remoto aceita detalhes de UsageStats.
+- [X] T108 [P] Prioridade P3 — Criar contrato opcional `PersonalUsageStatsRepository` sem binding no fluxo principal em `app/src/main/java/com/hackatudo/conscious/domain/repository/PersonalUsageStatsRepository.kt`; concluído quando nenhuma feature P0 depende dele.
+- [X] T109 [P] Prioridade P3 — Criar detector de disponibilidade/permissão e Intent de configurações em `app/src/main/java/com/hackatudo/conscious/data/apps/AndroidUsageStatsRepository.kt`; concluído quando ausência de `PACKAGE_USAGE_STATS` retorna indisponível sem erro.
+- [X] T110 Prioridade P3 — Criar tela de explicação e opt-in separado em `app/src/main/java/com/hackatudo/conscious/feature/settings/UsageAccessSettingsScreen.kt` (depende de T108, T109); concluído quando recusa mantém launcher e sessões íntegros.
+- [X] T111 Prioridade P3 — Criar consulta local mínima e teste de não serialização em `app/src/test/java/com/hackatudo/conscious/data/apps/UsageStatsPrivacyTest.kt` (depende de T109, T110); concluído quando nenhum DTO remoto aceita detalhes de UsageStats.
 
 ---
 

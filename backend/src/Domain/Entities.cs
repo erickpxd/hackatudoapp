@@ -92,6 +92,7 @@ public sealed class SharedSessionSummary
 {
     public Guid Id { get; set; }
     public Guid GroupId { get; set; }
+    public Guid? ClassroomId { get; set; }
     public int DurationMinutes { get; set; }
     public bool Completed { get; set; }
     public DateTimeOffset OccurredAt { get; set; }

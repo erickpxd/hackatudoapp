@@ -8,5 +8,6 @@ public sealed record JoinInviteRequest(string InviteCode);
 public sealed record CreateGoalRequest(string Title, string TargetType, int TargetValue, DateTimeOffset StartsAt, DateTimeOffset EndsAt, long ExpectedVersion);
 public sealed record TransferOwnershipRequest(Guid NewOwnerId, long ExpectedVersion);
 public sealed record CreateNamedResourceRequest(string Name);
+public sealed record AddClassroomMemberRequest(Guid UserId);
 public sealed record SharedSessionSummaryRequest(Guid Id, Guid GroupId, int DurationMinutes, bool Completed, DateTimeOffset OccurredAt);
 public sealed record ClassroomAggregateResponse(Guid ClassroomId, int SessionCount, double AverageDurationMinutes, double CompletionRate, int InterventionCount, string Trend);
