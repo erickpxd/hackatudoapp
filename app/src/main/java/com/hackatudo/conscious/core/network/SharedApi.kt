@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName
 import java.util.UUID
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.Header
 import retrofit2.http.POST
 
 data class LoginDto(val email: String, val password: String)
@@ -20,5 +21,9 @@ data class SharedSessionSummaryDto(
 
 interface SharedApi {
     @POST("auth/login") suspend fun login(@Body request: LoginDto): AuthResultDto
-    @POST("session-summaries") suspend fun sendSummary(@Body request: SharedSessionSummaryDto): Response<Unit>
+    @POST("session-summaries")
+    suspend fun sendSummary(
+        @Header("Idempotency-Key") idempotencyKey: String,
+        @Body request: SharedSessionSummaryDto,
+    ): Response<Unit>
 }
