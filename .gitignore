@@ -6,6 +6,7 @@ local.properties
 *.iml
 *.class
 *.jar
+!gradle/wrapper/gradle-wrapper.jar
 *.log
 .env*
 .DS_Store
@@ -16,4 +17,15 @@ Thumbs.db
 captures/
 externalNativeBuild/
 .cxx/
+node_modules/
+dist/
+bin/
+obj/
+*.user
+*.suo
+packages/
+coverage/
+.angular/
+.dotnet/
 .android-sdk/
+.android-commandlinetools-win.zip

@@ -33,6 +33,8 @@ interface FocusSessionDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun upsertApps(entities: List<SessionAppEntity>)
     @Query("DELETE FROM session_apps WHERE sessionId = :sessionId") suspend fun deleteApps(sessionId: UUID)
     @Query("UPDATE usage_intentions SET activeUntilEpochMillis = :endedAt WHERE sessionId = :sessionId AND activeUntilEpochMillis IS NULL") suspend fun closeCurrentIntent(sessionId: UUID, endedAt: Long)
+    @Query("DELETE FROM focus_sessions WHERE id = :sessionId") suspend fun deleteSession(sessionId: UUID)
+    @Query("DELETE FROM focus_sessions") suspend fun deleteAllSessions()
 
     @Transaction
     suspend fun replace(record: FocusSessionRecord) {

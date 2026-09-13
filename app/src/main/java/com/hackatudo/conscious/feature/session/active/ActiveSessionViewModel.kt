@@ -16,9 +16,16 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 import javax.inject.Inject
 
 data class ActiveSessionUiState(val session: FocusSession? = null, val remainingMillis: Long = 0)
+
+sealed interface ActiveSessionEffect {
+    data class ShowSummary(val sessionId: java.util.UUID) : ActiveSessionEffect
+    data object ReturnToLauncher : ActiveSessionEffect
+}
 
 @HiltViewModel
 class ActiveSessionViewModel @Inject constructor(
@@ -30,6 +37,8 @@ class ActiveSessionViewModel @Inject constructor(
     private val cancel: CancelFocusSessionUseCase,
     private val changeIntention: ChangeSessionIntentionUseCase,
 ) : ViewModel() {
+    private val effectChannel = Channel<ActiveSessionEffect>(Channel.BUFFERED)
+    val effects = effectChannel.receiveAsFlow()
     val uiState: StateFlow<ActiveSessionUiState> = current().map { session ->
         val elapsed = session?.startedAtEpochMillis?.let { (clock.nowEpochMillis() - it - session.accumulatedPauseMillis).coerceAtLeast(0) } ?: 0
         ActiveSessionUiState(session, (session?.plannedDurationMillis ?: 0) - elapsed)
@@ -37,8 +46,14 @@ class ActiveSessionViewModel @Inject constructor(
 
     fun pause() = withSession { pause(it.id) }
     fun resume() = withSession { resume(it.id) }
-    fun complete() = withSession { complete(it.id) }
-    fun cancel() = withSession { cancel(it.id) }
+    fun complete() = withSession { session ->
+        complete(session.id)
+        effectChannel.send(ActiveSessionEffect.ShowSummary(session.id))
+    }
+    fun cancel() = withSession { session ->
+        cancel(session.id)
+        effectChannel.send(ActiveSessionEffect.ReturnToLauncher)
+    }
     fun changeIntention(value: String) = withSession { changeIntention(it.id, value) }
     private fun withSession(action: suspend (FocusSession) -> Unit) { viewModelScope.launch { uiState.value.session?.let { action(it) } } }
 }

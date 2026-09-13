@@ -30,6 +30,11 @@ fun HomeLauncherScreen(
     onRequestHomeRole: () -> Unit,
     onRetry: () -> Unit,
     onNewSession: () -> Unit = {},
+    onInsights: () -> Unit = {},
+    onGroups: () -> Unit = {},
+    onSuggestion: () -> Unit = {},
+    onInstitution: () -> Unit = {},
+    onSettings: () -> Unit = {},
 ) {
     when {
         state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -42,6 +47,11 @@ fun HomeLauncherScreen(
                 Text("Intenção: ${session.currentIntention?.text ?: session.title}")
                 Text("Sessão ${session.status.name.lowercase()}")
             } ?: Button(onClick = onNewSession) { Text("Nova sessão") }
+            Button(onClick = onInsights) { Text("Meus indicadores") }
+            Button(onClick = onGroups) { Text("Grupos") }
+            Button(onClick = onSuggestion) { Text("Sugestão pedagógica") }
+            Button(onClick = onInstitution) { Text("Painel agregado") }
+            Button(onClick = onSettings) { Text("Privacidade e configurações") }
             if (state.homeRoleStatus == HomeRoleStatus.NOT_SELECTED) {
                 Text("Você pode escolher este app como tela inicial. Essa escolha é reversível.")
                 Button(onClick = onRequestHomeRole) { Text("Escolher tela inicial") }

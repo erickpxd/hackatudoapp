@@ -22,6 +22,8 @@ class RoomFocusSessionRepository @Inject constructor(private val database: AppDa
     override fun observeCurrent(): Flow<FocusSession?> = dao.observeCurrent().map { it?.toDomain() }
     override suspend fun get(id: UUID): FocusSession? = dao.get(id)?.toDomain()
     override suspend fun save(session: FocusSession) = database.withTransaction { dao.replace(session.toRecord()) }
+    override suspend fun delete(id: UUID) = database.withTransaction { dao.deleteSession(id) }
+    override suspend fun deleteAll() = database.withTransaction { dao.deleteAllSessions() }
 }
 
 class RoomFocusContextRepository @Inject constructor(private val database: AppDatabase) : FocusContextRepository {

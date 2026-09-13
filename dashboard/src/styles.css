@@ -1,0 +1,4 @@
+:root { font-family: system-ui, sans-serif; color: #1c2926; background: #f4f7f5; }
+body { margin: 0; }
+button, input, select { font: inherit; padding: .65rem; }
+.card { background: white; border: 1px solid #d7e1dd; border-radius: 12px; padding: 1rem; }

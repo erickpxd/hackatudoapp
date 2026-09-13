@@ -9,6 +9,8 @@ interface FocusSessionRepository {
     fun observeCurrent(): Flow<FocusSession?>
     suspend fun get(id: UUID): FocusSession?
     suspend fun save(session: FocusSession)
+    suspend fun delete(id: UUID) = Unit
+    suspend fun deleteAll() = Unit
 }
 
 interface FocusContextRepository {
