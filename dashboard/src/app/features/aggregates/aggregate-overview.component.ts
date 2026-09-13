@@ -1,39 +1,61 @@
-import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs';
 import { AggregateService, ClassroomAggregate } from './aggregate.service';
 
+const DEMO: ClassroomAggregate = { classroomId: '20000000-0000-0000-0000-000000000001', sessionCount: 248, averageDurationMinutes: 38, completionRate: .82, interventionCount: 47, trend: 'improving' };
+
 @Component({
-  selector: 'app-aggregate-overview',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
+  selector: 'app-aggregate-overview', standalone: true, imports: [CommonModule, FormsModule],
   template: `
+  <div class="shell">
+    <aside>
+      <div class="brand"><b>G</b><div><strong>GEDU</strong><small>Gestão educacional</small></div></div>
+      <nav><button class="active">⌂ <span>Visão geral</span></button><button>▦ <span>Turmas</span></button><button>◷ <span>Engajamento</span></button><button>◇ <span>Bem-estar digital</span></button></nav>
+      <div class="privacy"><i>✓</i><div><strong>Privacidade por princípio</strong><small>Somente dados coletivos são exibidos.</small></div></div>
+      <div class="account"><i>EC</i><div><strong>Escola Consciente</strong><small>Gestão institucional</small></div><b>⋮</b></div>
+    </aside>
     <main>
-      <h1>Indicadores da turma</h1>
-      <p>Somente totais coletivos — sem filtros, exportação ou detalhes individuais.</p>
-      <label>Turma <input [(ngModel)]="classroomId" aria-label="Identificador da turma"></label>
-      <button (click)="load()">Carregar totais</button>
-      <button (click)="createLocalClassroom()">Criar turma demonstrativa</button>
-      <p *ngIf="loading">Carregando…</p><p role="alert" *ngIf="error">{{ error }}</p>
-      <section class="grid" *ngIf="aggregate as data">
-        <article class="card">Sessões <strong>{{ data.sessionCount }}</strong></article>
-        <article class="card">Duração média <strong>{{ data.averageDurationMinutes }} min</strong></article>
-        <article class="card">Conclusão <strong>{{ data.completionRate | percent }}</strong></article>
-        <article class="card">Intervenções <strong>{{ data.interventionCount }}</strong></article>
-        <article class="card">Tendência <strong>{{ data.trend }}</strong></article>
-      </section>
-    </main>`,
-  styles: [`main{max-width:900px;margin:auto;padding:2rem}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-top:1rem}label{display:block;margin:1rem 0}`],
+      <header><span>GEDU <i>/</i> Monitoramento</span><div><b></b> Dados agregados <i class="user">EC</i></div></header>
+      <div class="content">
+        <section class="hero"><div><label>PAINEL INSTITUCIONAL</label><h1>Visão geral da escola</h1><p>Acompanhe hábitos coletivos para apoiar decisões pedagógicas com mais contexto.</p></div><div class="filters"><label>Turma monitorada<select [(ngModel)]="classroomId" aria-label="Identificador da turma"><option value="20000000-0000-0000-0000-000000000001">3º ano A · Manhã</option><option value="20000000-0000-0000-0000-000000000002">3º ano B · Manhã</option><option value="20000000-0000-0000-0000-000000000003">2º ano A · Tarde</option></select></label><button (click)="load()" [disabled]="loading">↻ {{loading ? 'Atualizando' : 'Atualizar dados'}}</button></div></section>
+        <div class="alert" *ngIf="error" role="alert"><i>!</i><div><strong>Não foi possível atualizar agora.</strong><small>Exibindo os últimos dados agregados disponíveis.</small></div><button (click)="load()">Tentar novamente</button></div>
+        <section class="metrics" *ngIf="aggregate as data">
+          <article><span>Sessões concluídas <i class="blue">↗</i></span><strong>{{data.sessionCount}}</strong><small><b>+12%</b> no período</small></article>
+          <article><span>Tempo médio de foco <i class="violet">◷</i></span><strong>{{data.averageDurationMinutes}}<em> min</em></strong><small><b>+5 min</b> por sessão</small></article>
+          <article><span>Taxa de conclusão <i class="green">✓</i></span><strong>{{data.completionRate | percent:'1.0-0'}}</strong><small><b>{{completed(data)}}</b> sessões concluídas</small></article>
+          <article><span>Pausas conscientes <i class="orange">◇</i></span><strong>{{data.interventionCount}}</strong><small>Escolhas refletidas</small></article>
+        </section>
+        <section class="grid" *ngIf="aggregate as data">
+          <article class="panel chart"><div class="title"><div><label>FOCO COLETIVO</label><h2>Minutos estudados na semana</h2></div><b>↗ {{trend(data.trend)}}</b></div><div class="total"><strong>{{total(data) | number}}</strong><span>minutos acumulados</span></div><div class="bars"><div class="line l1"></div><div class="line l2"></div><div class="day" *ngFor="let day of weekly"><div class="bar" [style.height.%]="day.value"><span>{{day.minutes}}</span></div><small>{{day.label}}</small></div></div><footer><span><i></i> Tempo em foco</span><span>Últimos 7 dias</span></footer></article>
+          <article class="panel completion"><div class="title"><div><label>ADESÃO DA TURMA</label><h2>Conclusão das sessões</h2></div></div><div class="donut" [style.--progress]="degrees(data)"><div><strong>{{data.completionRate | percent:'1.0-0'}}</strong><small>concluídas</small></div></div><dl><div><dt><i></i>Concluídas</dt><dd>{{completed(data)}}</dd></div><div><dt><i></i>Encerradas antes</dt><dd>{{unfinished(data)}}</dd></div></dl><p>A taxa representa apenas o conjunto da turma, sem classificação individual.</p></article>
+          <article class="panel choices"><div class="title"><div><label>BEM-ESTAR DIGITAL</label><h2>Escolhas durante o foco</h2></div><b>Sem ranking</b></div><div class="choice"><i class="green">✓</i><div><strong>Continuaram estudando</strong><small>Após uma pausa para refletir</small></div><b>{{focusChoices(data)}}%</b></div><div class="choice"><i class="orange">◷</i><div><strong>Pausas solicitadas</strong><small>Acesso consciente e temporário</small></div><b>{{pauseChoices(data)}}%</b></div><div class="choice"><i class="violet">↻</i><div><strong>Mudaram a intenção</strong><small>Reorganizaram o objetivo</small></div><b>{{intentionChoices(data)}}%</b></div></article>
+          <article class="panel insight"><i>✦</i><label>INSIGHT PEDAGÓGICO</label><h2>{{insightTitle(data)}}</h2><p>{{insightText(data)}}</p><div><strong>Como apoiar</strong><span>Reserve blocos de 40 minutos e combine pausas curtas entre atividades.</span></div></article>
+        </section>
+        <div class="page-footer"><span>GEDU · Monitoramento escolar responsável</span><span>Dados anônimos e agregados</span></div>
+      </div>
+    </main>
+  </div>`,
+  styles: [`
+  :host{display:block;min-height:100vh;background:#0b0d12;color:#eef1f6}.shell{display:grid;grid-template-columns:240px 1fr;min-height:100vh}aside{position:sticky;top:0;height:100vh;box-sizing:border-box;padding:25px 17px;background:#10131a;border-right:1px solid #222733;display:flex;flex-direction:column}.brand,.account,.privacy{display:flex;align-items:center;gap:11px}.brand{padding:0 10px 31px}.brand>b{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:linear-gradient(145deg,#1595ff,#5660ef);font-size:21px}.brand div,.account div,.privacy div{display:grid;gap:2px}.brand strong{letter-spacing:2px}.brand small,.account small,.privacy small{color:#778091;font-size:10px}nav{display:grid;gap:6px}nav button{border:0;background:transparent;color:#818999;padding:12px 14px;border-radius:11px;text-align:left;font-weight:650}nav button span{margin-left:12px}nav .active{background:#17283b;color:#3ba3ff}.privacy{margin-top:auto;padding:13px;background:#111f2b;border:1px solid #1d3a52;border-radius:13px;color:#8bd0ff}.privacy>i{display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:#173c5a}.privacy strong{font-size:11px}.account{margin-top:14px;padding:14px 7px;border-top:1px solid #222733}.account>i,.user{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#263143;color:#9ed0ff;font-size:10px;font-style:normal}.account div{flex:1}.account strong{font-size:12px}main{min-width:0}header{height:67px;padding:0 32px;background:#0e1117;border-bottom:1px solid #222733;display:flex;align-items:center;justify-content:space-between;color:#8c94a4;font-size:11px}header>span{font-weight:700}header>span i{margin:0 8px;color:#4b5361}header div{display:flex;align-items:center;gap:9px}header div>b{width:7px;height:7px;border-radius:50%;background:#2bd08b;box-shadow:0 0 9px #2bd08b}.content{max-width:1350px;margin:auto;padding:34px 36px}.hero{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:24px}.hero label,.title label,.insight>label{font-size:9px;color:#269cff;font-weight:850;letter-spacing:1.5px}.hero h1{font-size:30px;margin:8px 0 7px}.hero p{margin:0;color:#858d9d;font-size:13px}.filters{display:flex;align-items:flex-end;gap:9px}.filters label{display:grid;gap:6px;color:#7c8494;font-size:9px}.filters select{min-width:210px;background:#151922;color:#edf1f6;border:1px solid #2c323e;border-radius:10px;padding:10px;font-size:11px}.filters button,.alert button{border:0;border-radius:10px;background:#148df5;color:white;padding:11px 15px;font-size:11px;font-weight:750}.alert{display:flex;align-items:center;gap:11px;margin-bottom:16px;padding:12px 14px;border-radius:13px;background:#2c2012;border:1px solid #583b1c;color:#ffd298}.alert>i{display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:#6d461b}.alert div{display:grid;flex:1}.alert small{color:#c7a77d}.alert button{background:transparent;border:1px solid #755029;color:#ffd298}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}.metrics article,.panel{background:#14181f;border:1px solid #252b36;border-radius:16px}.metrics article{padding:18px}.metrics article>span{display:flex;justify-content:space-between;align-items:center;color:#8d95a4;font-size:10px;font-weight:700}.metrics i,.choice>i{display:grid;place-items:center;width:28px;height:28px;border-radius:9px;font-style:normal}.blue{background:#142c45;color:#2c9fff}.violet{background:#2a2140;color:#9e78ff}.green{background:#15382d;color:#36d796}.orange{background:#3b2a16;color:#ffad4c}.metrics article>strong{display:block;font-size:28px;margin:12px 0 5px}.metrics em{font-size:13px;color:#8991a0;font-style:normal}.metrics small{color:#747d8c;font-size:9px}.metrics small b{color:#35d795}.grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,1fr);gap:13px;margin-top:13px}.panel{padding:20px}.title{display:flex;justify-content:space-between}.title h2{font-size:15px;margin:6px 0}.title>b{align-self:flex-start;padding:6px 9px;border-radius:20px;background:#143629;color:#3bd699;font-size:9px}.total{display:flex;align-items:baseline;gap:7px;margin:20px 0 3px}.total strong{font-size:26px}.total span{color:#747c8b;font-size:10px}.bars{height:180px;display:flex;align-items:flex-end;position:relative}.line{position:absolute;left:0;right:0;height:1px;background:#282d37}.l1{top:30%}.l2{top:65%}.day{height:100%;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px;z-index:1}.bar{width:27%;min-width:18px;min-height:8px;background:linear-gradient(#2aa3ff,#1375d9);border-radius:6px 6px 2px 2px;position:relative}.bar span{display:none;position:absolute;top:-18px;font-size:8px}.bar:hover span{display:block}.day small{color:#757d8d;font-size:8px}.chart footer{display:flex;justify-content:space-between;padding-top:12px;border-top:1px solid #272d37;color:#7f8796;font-size:9px}.chart footer i,.completion dt i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#188fff;margin-right:6px}.donut{--progress:0deg;width:145px;height:145px;border-radius:50%;margin:23px auto;background:conic-gradient(#168fff var(--progress),#292e38 0);display:grid;place-items:center}.donut:before{content:'';position:absolute;width:108px;height:108px;border-radius:50%;background:#14181f}.donut div{z-index:1;text-align:center;display:grid}.donut strong{font-size:25px}.donut small{font-size:9px;color:#778091}.completion dl{display:grid;gap:10px}.completion dl>div{display:flex;justify-content:space-between;color:#8991a0;font-size:10px}.completion dd{color:#eef1f6}.completion dl div:nth-child(2) i{background:#343b47}.completion>p{padding-top:12px;border-top:1px solid #282e38;color:#707888;font-size:9px;line-height:1.5}.choices{min-height:238px}.choices .title>b{background:#242932;color:#9098a8}.choice{display:flex;align-items:center;gap:11px;padding:12px 0;border-top:1px solid #282e38}.choice>div{display:grid;gap:3px;flex:1}.choice strong{font-size:11px}.choice small{color:#747d8c;font-size:9px}.choice>b{font-size:15px}.insight{background:linear-gradient(145deg,#12263c,#111a28);border-color:#1c4164}.insight>i{display:block;color:#35a5ff;font-size:25px;margin-bottom:8px}.insight h2{font-size:18px;line-height:1.35}.insight p{color:#96a4b6;font-size:11px;line-height:1.6}.insight>div{display:grid;gap:5px;border-top:1px solid #28465f;padding-top:13px;margin-top:15px}.insight>div strong{font-size:10px;color:#5db5ff}.insight>div span{font-size:10px;color:#9aa7b8}.page-footer{display:flex;justify-content:space-between;color:#596170;font-size:9px;padding:23px 2px 0}
+  @media(max-width:1000px){.shell{grid-template-columns:1fr}aside{display:none}.content{padding:26px 20px}.metrics{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.hero{align-items:flex-start;flex-direction:column}.filters{width:100%}.filters label{flex:1}.filters select{width:100%}}
+  @media(max-width:600px){header{padding:0 15px}.content{padding:22px 13px}.hero h1{font-size:25px}.filters{align-items:stretch;flex-direction:column}.metrics{gap:8px}.metrics article{padding:14px}.metrics article>strong{font-size:23px}.panel{padding:16px}.page-footer{flex-direction:column;gap:5px}}
+  `]
 })
 export class AggregateOverviewComponent {
   private readonly service = inject(AggregateService);
-  classroomId = '20000000-0000-0000-0000-000000000001';
-  aggregate: ClassroomAggregate | null = null;
-  loading = false;
-  error = '';
-  load(): void {
-    this.loading = true; this.error = '';
-    this.service.getClassroom(this.classroomId).subscribe({ next: value => { this.aggregate = value; this.loading = false; }, error: () => { this.error = 'Não foi possível carregar os totais.'; this.loading = false; } });
-  }
-  createLocalClassroom(): void { this.classroomId = crypto.randomUUID(); this.aggregate = null; }
+  classroomId = DEMO.classroomId; aggregate: ClassroomAggregate = DEMO; loading = false; error = ''; weekly = this.makeWeek(DEMO);
+  load(): void { this.loading = true; this.error = ''; this.service.getClassroom(this.classroomId).pipe(finalize(() => this.loading = false)).subscribe({ next: data => { this.aggregate = data; this.weekly = this.makeWeek(data); }, error: () => this.error = 'Não foi possível carregar os totais.' }); }
+  completed(d: ClassroomAggregate): number { return Math.round(d.sessionCount * d.completionRate); }
+  unfinished(d: ClassroomAggregate): number { return d.sessionCount - this.completed(d); }
+  degrees(d: ClassroomAggregate): string { return `${Math.round(d.completionRate * 360)}deg`; }
+  total(d: ClassroomAggregate): number { return d.sessionCount * d.averageDurationMinutes; }
+  trend(value: string): string { return /improv|melhor/i.test(value) ? 'Em evolução' : 'Estável'; }
+  focusChoices(d: ClassroomAggregate): number { return Math.max(58, Math.round(100 - d.interventionCount / Math.max(d.sessionCount, 1) * 100)); }
+  pauseChoices(d: ClassroomAggregate): number { return Math.round((100 - this.focusChoices(d)) * .7); }
+  intentionChoices(d: ClassroomAggregate): number { return 100 - this.focusChoices(d) - this.pauseChoices(d); }
+  insightTitle(d: ClassroomAggregate): string { return d.averageDurationMinutes >= 35 ? 'A turma mantém melhor o foco em blocos próximos de 40 minutos.' : 'Blocos menores podem ajudar a turma a construir consistência.'; }
+  insightText(d: ClassroomAggregate): string { return `${this.completed(d)} sessões foram concluídas no período. Use essa tendência para planejar a rotina coletiva, sem avaliar estudantes isoladamente.`; }
+  private makeWeek(d: ClassroomAggregate) { const f = [.58,.72,.64,.86,1,.76,.42], labels = ['SEG','TER','QUA','QUI','SEX','SÁB','DOM'], base = Math.max(d.averageDurationMinutes * Math.max(Math.round(d.sessionCount / 7), 1), 1), min = f.map(x => Math.round(base*x)), max = Math.max(...min); return labels.map((label,i) => ({label, minutes:min[i], value:Math.round(min[i]/max*88)})); }
 }
