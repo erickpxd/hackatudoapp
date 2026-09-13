@@ -14,8 +14,8 @@ class AccessibilitySmokeTest {
     @get:Rule val rule = createComposeRule()
 
     @Test fun essentialChoicesHaveTextAndActionsIndependentOfColor() {
-        rule.setContent { OnboardingScreen {} }
-        rule.onNodeWithText("Entendi e quero continuar").assertIsDisplayed().assertHasClickAction()
+        rule.setContent { OnboardingScreen { _, _, _ -> } }
+        rule.onNodeWithText("Começar").assertIsDisplayed().assertHasClickAction()
 
         rule.setContent {
             InterventionScreen(

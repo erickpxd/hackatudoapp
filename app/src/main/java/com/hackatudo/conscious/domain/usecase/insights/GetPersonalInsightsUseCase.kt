@@ -25,6 +25,7 @@ class GetPersonalInsightsUseCase @Inject constructor(
             averageDurationMillis = if (values.isEmpty()) 0 else total / values.size,
             activeDayCount = daily.size,
             currentConsistencyDays = consistency(daily.map { it.epochDay }),
+            interventionCount = values.sumOf { it.interventionCount },
             daily = daily,
         )
     }

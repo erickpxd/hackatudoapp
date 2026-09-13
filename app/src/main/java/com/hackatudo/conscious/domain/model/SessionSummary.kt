@@ -39,5 +39,6 @@ data class PersonalInsights(
     val averageDurationMillis: Long = 0,
     val activeDayCount: Int = 0,
     val currentConsistencyDays: Int = 0,
+    val interventionCount: Int = 0,
     val daily: List<DailyPersonalInsight> = emptyList(),
 )

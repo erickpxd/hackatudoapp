@@ -15,7 +15,8 @@ class OnboardingViewModel @Inject constructor(private val preferences: PrivacyPr
     private val effectsChannel = Channel<Unit>(Channel.BUFFERED)
     val completed = effectsChannel.receiveAsFlow()
     init { viewModelScope.launch { if (preferences.preferences.first().onboardingCompleted) effectsChannel.send(Unit) } }
-    fun finish() = viewModelScope.launch {
+    fun finish(userName: String, petName: String, themeColor: String) = viewModelScope.launch {
+        preferences.setOnboardingProfile(userName.trim(), petName, themeColor)
         preferences.setLocalCategoriesDisclosed(true)
         preferences.setSharedCategoriesDisclosed(true)
         preferences.setHomeRoleEducationShown(true)

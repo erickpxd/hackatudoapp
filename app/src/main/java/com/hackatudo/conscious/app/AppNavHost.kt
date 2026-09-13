@@ -1,9 +1,17 @@
 package com.hackatudo.conscious.app
 
+import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
@@ -44,6 +52,7 @@ import com.hackatudo.conscious.data.demo.InstitutionalAggregateFixtures
 import com.hackatudo.conscious.feature.settings.SettingsScreen
 import com.hackatudo.conscious.feature.settings.SettingsViewModel
 import com.hackatudo.conscious.feature.settings.UsageAccessSettingsScreen
+import com.hackatudo.conscious.feature.ai.AiTutorScreen
 import com.hackatudo.conscious.data.apps.AndroidUsageStatsRepository
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.LaunchedEffect
@@ -54,14 +63,34 @@ import javax.inject.Inject
 class LauncherActions @Inject constructor(
     val appLauncher: AppLauncher,
     val homeRoleManager: HomeRoleManager,
+    val navigationRequests: LauncherNavigationRequests,
 )
 
 @Composable
 fun AppNavHost(
     actions: LauncherActions,
+    onboardingCompleted: Boolean,
 ) {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = Destination.Onboarding.route) {
+    val openMainTab: (String) -> Unit = { route ->
+        navController.navigate(route) {
+            popUpTo(Destination.Launcher.route)
+            launchSingleTop = true
+        }
+    }
+    LaunchedEffect(actions.navigationRequests) {
+        actions.navigationRequests.interventions.collect { packageName ->
+            navController.navigate(Destination.Intervention.createRoute(packageName))
+        }
+    }
+    NavHost(
+        navController = navController,
+        startDestination = if (onboardingCompleted) Destination.Launcher.route else Destination.Onboarding.route,
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .windowInsetsPadding(WindowInsets.safeDrawing),
+    ) {
         composable(Destination.Onboarding.route) {
             val viewModel: OnboardingViewModel = hiltViewModel()
             LaunchedEffect(viewModel) {
@@ -69,7 +98,7 @@ fun AppNavHost(
                     navController.navigate(Destination.Launcher.route) { popUpTo(Destination.Onboarding.route) { inclusive = true } }
                 }
             }
-            OnboardingScreen(viewModel::finish)
+            OnboardingScreen(onComplete = viewModel::finish)
         }
         composable(Destination.Launcher.route) {
             val viewModel: LauncherViewModel = hiltViewModel()
@@ -87,24 +116,41 @@ fun AppNavHost(
                 state = state,
                 onAppClick = viewModel::requestAppLaunch,
                 onRequestHomeRole = { actions.homeRoleManager.createRequestIntent()?.let(homeRoleLauncher::launch) },
+                onDismissHomeRolePrompt = viewModel::dismissHomeRolePrompt,
                 onRetry = viewModel::retry,
                 onNewSession = { navController.navigate(Destination.CreateSession.route) },
-                onInsights = { navController.navigate(Destination.PersonalInsights.route) },
-                onGroups = { navController.navigate(Destination.Groups.route) },
+                onActiveSession = { navController.navigate(Destination.ActiveSession.route) },
+                onInsights = { openMainTab(Destination.PersonalInsights.route) },
+                onGroups = { openMainTab(Destination.Groups.route) },
                 onSuggestion = { navController.navigate(Destination.Suggestion.route) },
                 onInstitution = { navController.navigate(Destination.Institution.route) },
                 onSettings = { navController.navigate(Destination.Settings.route) },
+                onAiTutor = { navController.navigate(Destination.AiTutor.route) },
+                onProfile = { openMainTab(Destination.Settings.route) },
             )
+        }
+        composable(Destination.AiTutor.route) {
+            AiTutorScreen(onBack = { navController.popBackStack() })
         }
         composable(Destination.CreateSession.route) {
             val viewModel: CreateSessionViewModel = hiltViewModel()
             val state by viewModel.uiState.collectAsStateWithLifecycle()
             LaunchedEffect(state.started) { if (state.started) navController.navigate(Destination.ActiveSession.route) }
-            CreateSessionScreen(state, viewModel::setIntention, viewModel::setDuration, viewModel::toggleApp, viewModel::applyContext, viewModel::start, viewModel::saveContext)
+            CreateSessionScreen(
+                state,
+                viewModel::setIntention,
+                viewModel::setDuration,
+                viewModel::toggleApp,
+                viewModel::applyContext,
+                viewModel::start,
+                viewModel::saveContext,
+                onBack = { navController.popBackStack() },
+            )
         }
         composable(Destination.ActiveSession.route) {
             val viewModel: ActiveSessionViewModel = hiltViewModel()
             val state by viewModel.uiState.collectAsStateWithLifecycle()
+            val context = LocalContext.current
             LaunchedEffect(viewModel) {
                 viewModel.effects.collect { effect ->
                     when (effect) {
@@ -115,7 +161,21 @@ fun AppNavHost(
                     }
                 }
             }
-            ActiveSessionScreen(state, viewModel::pause, viewModel::resume, viewModel::complete, viewModel::cancel, viewModel::changeIntention)
+            ActiveSessionScreen(
+                state,
+                viewModel::pause,
+                viewModel::resume,
+                viewModel::complete,
+                viewModel::cancel,
+                viewModel::changeIntention,
+                onAiTutor = { navController.navigate(Destination.AiTutor.route) },
+                onOpenPhoneHome = {
+                    context.startActivity(
+                        Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                    )
+                },
+            )
         }
         composable(
             route = Destination.Intervention.route,
@@ -126,10 +186,10 @@ fun AppNavHost(
             LaunchedEffect(viewModel) {
                 viewModel.effects.collect { effect ->
                     when (effect) {
-                        InterventionEffect.ReturnToLauncher -> navController.popBackStack(Destination.Launcher.route, false)
+                        InterventionEffect.ReturnToLauncher -> navController.popBackStack()
                         is InterventionEffect.OpenApp -> {
+                            navController.popBackStack()
                             actions.appLauncher.launch(effect.packageName)
-                            navController.popBackStack(Destination.Launcher.route, false)
                         }
                     }
                 }
@@ -165,7 +225,12 @@ fun AppNavHost(
         composable(Destination.PersonalInsights.route) {
             val viewModel: PersonalInsightsViewModel = hiltViewModel()
             val state by viewModel.uiState.collectAsStateWithLifecycle()
-            PersonalInsightsScreen(state)
+            PersonalInsightsScreen(
+                state = state,
+                onHome = { navController.popBackStack(Destination.Launcher.route, false) },
+                onFriends = { openMainTab(Destination.Groups.route) },
+                onProfile = { openMainTab(Destination.Settings.route) },
+            )
         }
         composable(Destination.Groups.route) {
             val viewModel: GroupsViewModel = hiltViewModel()
@@ -174,6 +239,8 @@ fun AppNavHost(
                 viewModel.effects.collect { effect ->
                     when (effect) {
                         is GroupsEffect.OpenGroup -> navController.navigate(Destination.GroupDetails.createRoute(effect.groupId))
+                        GroupsEffect.CreateGroupSession -> navController.navigate(Destination.CreateSession.route)
+                        GroupsEffect.ResumeActiveSession -> navController.navigate(Destination.ActiveSession.route)
                     }
                 }
             }
@@ -183,6 +250,13 @@ fun AppNavHost(
                 onOpenGroup = { navController.navigate(Destination.GroupDetails.createRoute(it)) },
                 onInviteCodeChange = viewModel::setInviteCode,
                 onJoinByCode = viewModel::joinDemoGroup,
+                onNewFriendNameChange = viewModel::setNewFriendName,
+                onAddFriend = viewModel::addFriend,
+                onToggleFriend = viewModel::toggleFriend,
+                onStartWithFriends = viewModel::startWithFriends,
+                onHome = { navController.popBackStack(Destination.Launcher.route, false) },
+                onJourney = { openMainTab(Destination.PersonalInsights.route) },
+                onProfile = { openMainTab(Destination.Settings.route) },
             )
         }
         composable(Destination.CreateGroup.route) {
@@ -201,8 +275,8 @@ fun AppNavHost(
                 viewModel::updateDescription,
                 viewModel::updateObjective,
                 viewModel::updateOwnerAlias,
-                viewModel::selectMascot,
                 viewModel::create,
+                onBack = { navController.popBackStack() },
             )
         }
         composable(
@@ -222,6 +296,7 @@ fun AppNavHost(
                 viewModel::createGoal,
                 viewModel::addCompletedSession,
                 viewModel::leaveAsOwner,
+                onBack = { navController.popBackStack() },
             )
         }
         composable(Destination.Suggestion.route) {
@@ -243,7 +318,22 @@ fun AppNavHost(
         composable(Destination.Settings.route) {
             val viewModel: SettingsViewModel = hiltViewModel()
             val state by viewModel.state.collectAsStateWithLifecycle()
-            SettingsScreen(state, viewModel::deletePersonalHistory) { navController.navigate(Destination.UsageAccess.route) }
+            val homeRoleLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { viewModel.refreshHomeRole() }
+            SettingsScreen(
+                state = state,
+                onDeleteHistory = viewModel::deletePersonalHistory,
+                onUsageAccess = { navController.navigate(Destination.UsageAccess.route) },
+                onThemeColorChange = viewModel::setThemeColor,
+                onNotificationsChange = viewModel::setNotificationsEnabled,
+                onBreakRemindersChange = viewModel::setBreakRemindersEnabled,
+                onContextChange = viewModel::setCurrentContext,
+                onDistractingChange = viewModel::setDistracting,
+                onAppNotificationsChange = viewModel::setAppNotifications,
+                onRequestHomeRole = { actions.homeRoleManager.createRequestIntent()?.let(homeRoleLauncher::launch) },
+                onHome = { navController.popBackStack(Destination.Launcher.route, false) },
+                onFriends = { openMainTab(Destination.Groups.route) },
+                onJourney = { openMainTab(Destination.PersonalInsights.route) },
+            )
         }
         composable(Destination.UsageAccess.route) {
             val context = LocalContext.current

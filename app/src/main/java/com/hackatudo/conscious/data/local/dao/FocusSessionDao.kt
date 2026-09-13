@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Upsert
 import com.hackatudo.conscious.data.local.entity.FocusSessionEntity
 import com.hackatudo.conscious.data.local.entity.SessionAppEntity
 import com.hackatudo.conscious.data.local.entity.UsageIntentEntity
@@ -28,7 +29,7 @@ interface FocusSessionDao {
     @Query("SELECT * FROM focus_sessions WHERE id = :id")
     suspend fun get(id: UUID): FocusSessionRecord?
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun upsertSession(entity: FocusSessionEntity)
+    @Upsert suspend fun upsertSession(entity: FocusSessionEntity)
     @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun upsertIntent(entity: UsageIntentEntity)
     @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun upsertApps(entities: List<SessionAppEntity>)
     @Query("DELETE FROM session_apps WHERE sessionId = :sessionId") suspend fun deleteApps(sessionId: UUID)
